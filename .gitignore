@@ -1,0 +1,16 @@
+# Editor
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+tests/tmp/
+
+# Local development
+.env
+.env.local

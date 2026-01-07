@@ -1,0 +1,8 @@
+# Default shell for shellcheck
+shell=bash
+
+# Disable SC3040: setopt is zsh-specific (we handle both zsh and bash)
+disable=SC3040
+
+# Disable SC3011: here-strings are undefined in POSIX sh (we target bash/zsh)
+disable=SC3011
