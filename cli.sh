@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Licensed under the MIT License. See LICENSE file in the project root.
+
 function cli {
     local cmd="$1"
     
