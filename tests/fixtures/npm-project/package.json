@@ -1,0 +1,8 @@
+{
+  "name": "test-npm-project",
+  "scripts": {
+    "dev": "echo 'npm dev script'",
+    "build": "echo 'npm build script'",
+    "test": "echo 'npm test script'"
+  }
+}
