@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+# Pre-push hook: Run make check before pushing
+# This ensures code passes lint, format check, and tests
+
+echo "Running pre-push hook: checking code quality..."
+
+if ! make check; then
+	echo "Error: Pre-push checks failed. Please fix the issues before pushing." >&2
+	exit 1
+fi
+
+echo "Pre-push hook completed successfully"
+exit 0

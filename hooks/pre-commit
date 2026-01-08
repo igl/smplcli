@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+# Pre-commit hook: Format code before committing
+# This ensures all shell files are formatted with shfmt
+
+echo "Running pre-commit hook: formatting code..."
+
+# Run formatter
+if ! make fmt; then
+	echo "Error: Formatting failed" >&2
+	exit 1
+fi
+
+# Re-add formatted files to staging
+# Get list of shell files that were staged
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.sh$' || true)
+
+if [ -n "$STAGED_FILES" ]; then
+	echo "Re-adding formatted files to staging..."
+	echo "$STAGED_FILES" | xargs git add
+fi
+
+echo "Pre-commit hook completed successfully"
+exit 0

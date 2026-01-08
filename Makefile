@@ -1,4 +1,4 @@
-.PHONY: lint fmt fmt-check test check version suggest-version help
+.PHONY: lint fmt fmt-check test check version suggest-version install-hooks help
 
 # Default target
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  fmt-check      - Check formatting without modifying"
 	@echo "  test           - Run bats tests"
 	@echo "  check          - Run lint + fmt-check + test (CI)"
+	@echo "  install-hooks  - Install git hooks (symlink from hooks/ to .git/hooks/)"
 	@echo "  version        - Show current version from git tag"
 	@echo "  suggest-version - Analyze commits and suggest next version"
 
@@ -31,6 +32,19 @@ test:
 
 check: lint fmt-check test
 	@echo "All checks passed!"
+
+install-hooks:
+	@echo "Installing git hooks..."
+	@mkdir -p .git/hooks
+	@for hook in hooks/*; do \
+		hook_name=$$(basename "$$hook"); \
+		if [ -f ".git/hooks/$$hook_name" ]; then \
+			rm ".git/hooks/$$hook_name"; \
+		fi; \
+		ln -sf "../../$$hook" ".git/hooks/$$hook_name"; \
+		echo "  Installed $$hook_name"; \
+	done
+	@echo "Git hooks installed successfully!"
 
 version:
 	@git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0"

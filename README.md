@@ -82,6 +82,18 @@ make fmt      # format with shfmt
 make test     # run bats tests
 ```
 
+### Git Hooks
+
+Install git hooks to automatically format code before commits and run checks before pushes:
+
+```bash
+make install-hooks
+```
+
+This sets up:
+- **pre-commit**: Formats shell files with `shfmt` before committing
+- **pre-push**: Runs `make check` before pushing (prevents pushing broken code)
+
 ### Recommended
 
 [Cursor Agent](https://cursor.sh) for AI-enhanced tasks (suggest-version, validate-docs, prepare-release).
