@@ -1,0 +1,90 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - main
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    # Only run if CI passed on main branch
+    # workflow_run trigger already filters by main branch, so we just check conclusion
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify CI passed (for tag pushes)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            
+            // Get commit SHA for the tag
+            let commitSha;
+            try {
+              const { data: refData } = await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/${tag}`
+              });
+              commitSha = refData.object.sha;
+            } catch (error) {
+              core.setFailed(`Failed to get tag reference: ${error.message}`);
+              return;
+            }
+            
+            // Find CI workflow run for this commit on main branch
+            let ciRun;
+            try {
+              const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head_sha: commitSha,
+                branch: 'main'
+              });
+              
+              ciRun = runs.workflow_runs.find(run => run.name === 'CI');
+            } catch (error) {
+              core.setFailed(`Failed to check CI workflow status: ${error.message}`);
+              return;
+            }
+            
+            if (!ciRun) {
+              core.setFailed(`CI workflow not found for commit ${commitSha} on main branch. Ensure CI has run and passed before creating a release.`);
+              return;
+            }
+            
+            if (ciRun.status !== 'completed') {
+              core.setFailed(`CI workflow is still running (status: ${ciRun.status}). Wait for CI to complete before creating a release.`);
+              return;
+            }
+            
+            if (ciRun.conclusion !== 'success') {
+              core.setFailed(`CI workflow failed for commit ${commitSha} (conclusion: ${ciRun.conclusion}). Cannot create release for a broken version.`);
+              return;
+            }
+            
+            core.info(`✓ CI workflow passed for commit ${commitSha}`);
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: cli.sh
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
