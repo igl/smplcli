@@ -34,11 +34,14 @@ Priority: scripts → Makefile → deno.json → package.json
 
 ### Shebangs
 
-`.ts` scripts default to `deno run -A`. Use a shebang to customize the runtime or permissions:
+`.ts` scripts default to `deno run -A`. Use a shebang to customize the runtime or set permissions:
 
 ```typescript
-#!/usr/bin/env -S deno run --allow-read --allow-net
-console.log("runs with limited permissions");
+#!/usr/bin/env -S deno run --allow-net
+console.log("runs with network permission only");
+...
+// This will fail with error: "NotCapable: Requires env access..."
+console.log(process.env.SOME_VAR);
 ```
 
 ## Update / Uninstall
