@@ -33,14 +33,24 @@ fi
 
 # Get latest release tag from GitHub API
 info "Fetching latest release..."
-LATEST_TAG=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | jq -r '.tag_name // empty')
+set +e
+API_RESPONSE=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>&1)
+CURL_EXIT=$?
+set -e
 
-if [ -z "$LATEST_TAG" ]; then
-	warn "No releases found. Installing from main branch..."
+if [ $CURL_EXIT -ne 0 ]; then
+	warn "Failed to fetch release info: $API_RESPONSE"
+	warn "Installing from main branch..."
 	DOWNLOAD_URL="https://raw.githubusercontent.com/$REPO/main/cli.sh"
 else
-	info "Found release: $LATEST_TAG"
-	DOWNLOAD_URL="https://raw.githubusercontent.com/$REPO/$LATEST_TAG/cli.sh"
+	LATEST_TAG=$(echo "$API_RESPONSE" | jq -r '.tag_name // empty' 2>/dev/null)
+	if [ -z "$LATEST_TAG" ]; then
+		warn "No releases found. Installing from main branch..."
+		DOWNLOAD_URL="https://raw.githubusercontent.com/$REPO/main/cli.sh"
+	else
+		info "Found release: $LATEST_TAG"
+		DOWNLOAD_URL="https://raw.githubusercontent.com/$REPO/$LATEST_TAG/cli.sh"
+	fi
 fi
 
 # Create install directory
@@ -90,8 +100,5 @@ fi
 
 info "Installation complete!"
 echo ""
-echo "To start using smplcli, either:"
-echo "  1. Open a new terminal"
-echo "  2. Run: source $RC_FILE"
-echo ""
-echo "Then try: cli --help"
+echo "To use cli immediately, run: source $INSTALL_DIR/cli.sh"
+echo "Or open a new terminal (cli will be available automatically)."

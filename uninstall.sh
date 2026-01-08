@@ -38,4 +38,5 @@ remove_from_rc "$HOME/.profile"
 
 info "Uninstall complete!"
 echo ""
-echo "Restart your terminal or run: exec \$SHELL"
+echo "To remove cli from this terminal, run: unset -f cli"
+echo "Or restart your terminal (cli will be removed automatically)."
