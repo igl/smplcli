@@ -169,7 +169,7 @@ EOF
 }
 
 # =============================================================================
-# Priority tests (scripts > deno > npm > make)
+# Priority tests (scripts > make > deno > npm)
 # =============================================================================
 
 @test "scripts folder takes priority over deno.json" {

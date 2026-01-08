@@ -1,21 +1,6 @@
 # smplcli
 
-A unified task runner that discovers and runs tasks from multiple sources in your project.
-
-## Prerequisites
-
-**jq** is required for parsing JSON files.
-
-```bash
-# macOS
-brew install jq
-
-# Ubuntu/Debian
-sudo apt install jq
-
-# Arch
-sudo pacman -S jq
-```
+A unified task runner that discovers and runs tasks from multiple sources.
 
 ## Install
 
@@ -23,36 +8,38 @@ sudo pacman -S jq
 curl -fsSL https://raw.githubusercontent.com/igl/smplcli/main/install.sh | bash
 ```
 
+Requires **bash** or **zsh**. Works on macOS, Linux, and WSL.
+
 Then restart your terminal or run `source ~/.zshrc` (or `~/.bashrc`).
 
 ## Usage
 
 ```bash
-# Show available commands
-cli
-
-# Run a command
-cli <command> [args...]
-
-# Examples
-cli build
-cli dev --watch
-cli test
+cli              # show available commands
+cli <task>       # run a task
+cli build --watch
 ```
 
 ## Supported Task Sources
 
-smplcli discovers tasks from these sources (in priority order):
+| Source | Requires |
+|--------|----------|
+| `scripts/*.sh` | bash |
+| `scripts/*.ts` | deno |
+| `deno.json` tasks | deno, jq |
+| `package.json` scripts | npm, jq |
+| `Makefile` targets | make |
 
-| Source | Example |
-|--------|---------|
-| `scripts/*.sh` | `cli build` → runs `scripts/build.sh` |
-| `scripts/*.ts` | `cli dev` → runs `scripts/dev.ts` with deno |
-| `deno.json` tasks | `cli build` → `deno task build` |
-| `package.json` scripts | `cli build` → `npm run build` |
-| `Makefile` targets | `cli build` → `make build` |
+Priority: scripts → Makefile → deno.json → package.json
 
-If multiple sources define the same command, scripts folder takes priority.
+### Shebangs
+
+`.ts` scripts default to `deno run -A`. Use a shebang to customize the runtime or permissions:
+
+```typescript
+#!/usr/bin/env -S deno run --allow-read --allow-net
+console.log("runs with limited permissions");
+```
 
 ## Update / Uninstall
 
@@ -68,15 +55,20 @@ curl -fsSL https://raw.githubusercontent.com/igl/smplcli/main/uninstall.sh | bas
 
 > Cursor is not required to use smplcli.
 
-### Prerequisites for contributing
+### Prerequisites
 
-- [shellcheck](https://github.com/koalaman/shellcheck) - shell script linter
-- [shfmt](https://github.com/mvdan/sh) - shell script formatter
-- [bats-core](https://github.com/bats-core/bats-core) - bash testing framework
+```bash
+# macOS
+brew install shellcheck shfmt bats-core
 
-### Recommended
+# Ubuntu/Debian
+sudo apt install shellcheck
+go install mvdan.cc/sh/v3/cmd/shfmt@latest  # or snap install shfmt
+git clone https://github.com/bats-core/bats-core.git && sudo ./bats-core/install.sh /usr/local
 
-- [Cursor IDE](https://cursor.sh) - for AI-enhanced tasks (suggest-version, validate-docs)
+# Arch
+sudo pacman -S shellcheck shfmt bash-bats
+```
 
 ### Commands
 
@@ -86,6 +78,10 @@ make lint     # run shellcheck
 make fmt      # format with shfmt
 make test     # run bats tests
 ```
+
+### Recommended
+
+[Cursor Agent](https://cursor.sh) for AI-enhanced tasks (suggest-version, validate-docs, prepare-release).
 
 ## License
 

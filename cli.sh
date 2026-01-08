@@ -74,15 +74,17 @@ function cli {
         return $?
     done
 
+    # Try Makefile tasks next
+    for t in "${makefile_tasks[@]}"; do
+        if [ "$cmd" = "$t" ]; then shift; make "$cmd" "$@"; return $?; fi
+    done
+
     # Try Deno/NPM tasks last
     for t in "${deno_tasks[@]}"; do
         if [ "$cmd" = "$t" ]; then shift; deno task "$cmd" "$@"; return $?; fi
     done
     for t in "${node_tasks[@]}"; do
         if [ "$cmd" = "$t" ]; then shift; npm run "$cmd" -- "$@"; return $?; fi
-    done
-    for t in "${makefile_tasks[@]}"; do
-        if [ "$cmd" = "$t" ]; then shift; make "$cmd" "$@"; return $?; fi
     done
 
     echo "Unknown command: $cmd (run 'cli' for help)" >&2
