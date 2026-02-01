@@ -1,7 +1,42 @@
 # SPDX-License-Identifier: MIT
 # Licensed under the MIT License. See LICENSE file in the project root.
 
+# Separator for chaining multiple commands (e.g., cli lint __ build __ test)
+CLI_COMMAND_SEPARATOR="__"
+
 function cli {
+	# Check for multi-command separator
+	local has_separator=false
+	for arg in "$@"; do
+		if [ "$arg" = "$CLI_COMMAND_SEPARATOR" ]; then
+			has_separator=true
+			break
+		fi
+	done
+
+	if [ "$has_separator" = true ]; then
+		local cmd_args=()
+		for arg in "$@"; do
+			if [ "$arg" = "$CLI_COMMAND_SEPARATOR" ]; then
+				if [ ${#cmd_args[@]} -gt 0 ]; then
+					_cli_single "${cmd_args[@]}" || return $?
+					cmd_args=()
+				fi
+			else
+				cmd_args+=("$arg")
+			fi
+		done
+		# Execute final command group
+		if [ ${#cmd_args[@]} -gt 0 ]; then
+			_cli_single "${cmd_args[@]}" || return $?
+		fi
+		return 0
+	fi
+
+	_cli_single "$@"
+}
+
+function _cli_single {
 	local cmd="$1"
 
 	# Collect scripts, Deno tasks, NPM tasks and Makefile tasks

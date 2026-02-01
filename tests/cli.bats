@@ -185,3 +185,58 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"scripts wins"* ]]
 }
+
+# =============================================================================
+# Multi-command execution tests
+# =============================================================================
+
+@test "executes multiple commands separated by __" {
+    mkdir -p "$BATS_TEST_DIRNAME/tmp/multi-cmd/scripts"
+    echo '#!/bin/bash
+echo "lint: $*"' > "$BATS_TEST_DIRNAME/tmp/multi-cmd/scripts/lint.sh"
+    echo '#!/bin/bash
+echo "build: $*"' > "$BATS_TEST_DIRNAME/tmp/multi-cmd/scripts/build.sh"
+    chmod +x "$BATS_TEST_DIRNAME/tmp/multi-cmd/scripts"/*.sh
+
+    cd "$BATS_TEST_DIRNAME/tmp/multi-cmd"
+    run cli lint __ build
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"lint:"* ]]
+    [[ "$output" == *"build:"* ]]
+}
+
+@test "multi-command passes arguments to each command" {
+    mkdir -p "$BATS_TEST_DIRNAME/tmp/multi-args/scripts"
+    echo '#!/bin/bash
+echo "lint: $*"' > "$BATS_TEST_DIRNAME/tmp/multi-args/scripts/lint.sh"
+    echo '#!/bin/bash
+echo "build: $*"' > "$BATS_TEST_DIRNAME/tmp/multi-args/scripts/build.sh"
+    echo '#!/bin/bash
+echo "test: $*"' > "$BATS_TEST_DIRNAME/tmp/multi-args/scripts/test.sh"
+    chmod +x "$BATS_TEST_DIRNAME/tmp/multi-args/scripts"/*.sh
+
+    cd "$BATS_TEST_DIRNAME/tmp/multi-args"
+    run cli lint --fix __ build -o dist __ test --watch
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"lint: --fix"* ]]
+    [[ "$output" == *"build: -o dist"* ]]
+    [[ "$output" == *"test: --watch"* ]]
+}
+
+@test "multi-command stops on first failure" {
+    mkdir -p "$BATS_TEST_DIRNAME/tmp/multi-fail/scripts"
+    echo '#!/bin/bash
+echo "first ok"' > "$BATS_TEST_DIRNAME/tmp/multi-fail/scripts/first.sh"
+    echo '#!/bin/bash
+echo "second fails" && exit 1' > "$BATS_TEST_DIRNAME/tmp/multi-fail/scripts/second.sh"
+    echo '#!/bin/bash
+echo "third should not run"' > "$BATS_TEST_DIRNAME/tmp/multi-fail/scripts/third.sh"
+    chmod +x "$BATS_TEST_DIRNAME/tmp/multi-fail/scripts"/*.sh
+
+    cd "$BATS_TEST_DIRNAME/tmp/multi-fail"
+    run cli first __ second __ third
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"first ok"* ]]
+    [[ "$output" == *"second fails"* ]]
+    [[ "$output" != *"third should not run"* ]]
+}
