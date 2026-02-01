@@ -18,6 +18,9 @@ Then restart your terminal or run `source ~/.zshrc` (or `~/.bashrc`).
 cli              # show available commands
 cli <task>       # run a task
 cli build --watch
+
+# Chain multiple commands with __
+cli lint __ build __ test
 ```
 
 ## Supported Task Sources
