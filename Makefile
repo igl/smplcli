@@ -48,8 +48,3 @@ install-hooks:
 
 version:
 	@git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0"
-
-# Developer targets (not in CI)
-
-suggest-version:
-	@./scripts/suggest-version.sh
