@@ -109,7 +109,9 @@ function _cli_single {
 			shebang=$(sed -n '1s/^#![[:space:]]*//p' "$script")
 			shebang="${shebang#/usr/bin/env }"
 			shebang="${shebang#-S }"
-			${shebang:-deno run -A} "$script" "$@"
+			local -a interp
+			read -rA interp <<<"${shebang:-deno run -A}" 2>/dev/null || read -ra interp <<<"${shebang:-deno run -A}"
+			"${interp[@]}" "$script" "$@"
 		fi
 		return $?
 	done
