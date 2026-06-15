@@ -39,6 +39,12 @@ function cli {
 function _cli_single {
 	local cmd="$1"
 
+	# Put local binaries on PATH so subcommands find repo local installs
+	if [ -d "node_modules/.bin" ]; then
+		local PATH="$PWD/node_modules/.bin:$PATH"
+		export PATH
+	fi
+
 	# Collect scripts, Deno tasks, NPM tasks and Makefile tasks
 	local scripts=()
 	if [ -d "scripts" ]; then

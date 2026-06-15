@@ -30,7 +30,7 @@ test:
 	@echo "Running tests..."
 	@bats tests/
 
-check: lint fmt-check test
+ci check: lint fmt-check test
 	@echo "All checks passed!"
 
 install-hooks:
