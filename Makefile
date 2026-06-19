@@ -48,3 +48,6 @@ install-hooks:
 
 version:
 	@git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0"
+
+suggest-version:
+	@bash scripts/suggest-version.sh
